@@ -1,6 +1,10 @@
 import client from './client'
 
 export const dashboardApi = {
+  // Auth
+  login: (payload) => client.post('/api/auth/login', payload),
+  me: () => client.get('/api/auth/me'),
+
   // Health check
   healthCheck: () => client.get('/api/health'),
 
@@ -16,6 +20,7 @@ export const dashboardApi = {
     if (filters.code_module) params.append('code_module', filters.code_module)
     if (filters.code_presentation) params.append('code_presentation', filters.code_presentation)
     if (filters.risk_level) params.append('risk_level', filters.risk_level)
+    if (filters.student_id) params.append('student_id', filters.student_id)
     return client.get(`/api/students?${params.toString()}`)
   },
 

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { authStorage } from '../utils/auth'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'
 
@@ -12,6 +13,10 @@ const client = axios.create({
 // Request interceptor
 client.interceptors.request.use(
   (config) => {
+    const token = authStorage.getToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => {
@@ -26,6 +31,12 @@ client.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
+      if (error.response.status === 401) {
+        authStorage.clearToken()
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
+      }
       // Server responded with error
       const message = error.response.data?.message || 'An error occurred'
       return Promise.reject(new Error(message))

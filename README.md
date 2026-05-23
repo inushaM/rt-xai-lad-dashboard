@@ -14,6 +14,7 @@ A modern React dashboard for educators to view student risk predictions, model e
 - **Global Explainability**: SHAP feature importance visualization
 - **Model Metrics**: View training performance metrics
 - **Manual Prediction**: Enter student features to get predictions and explanations
+- **Login**: Sign-in at `/login`; signed bearer token stored in `localStorage` and sent on API requests (no public registration)
 
 ## Tech Stack
 
@@ -31,15 +32,16 @@ A modern React dashboard for educators to view student risk predictions, model e
 rt-xai-lad-dashboard/
 ├── src/
 │   ├── api/              # API client and endpoints
+│   ├── components/auth/  # ProtectedRoute
 │   ├── app/              # Redux store and slices
 │   ├── components/       # Reusable components
 │   │   ├── common/       # Common UI components
 │   │   ├── dashboard/    # Dashboard-specific components
 │   │   ├── explanations/ # Explanation components
 │   │   └── layout/       # Layout components
-│   ├── pages/            # Page components
+│   ├── pages/            # Page components (includes LoginPage)
 │   ├── theme/            # MUI theme configuration
-│   ├── utils/            # Utility functions
+│   ├── utils/            # Utility functions (e.g. auth token storage)
 │   ├── App.jsx
 │   └── main.jsx
 ├── public/
@@ -74,10 +76,10 @@ Copy `.env.example` to `.env`:
 cp .env.example .env
 ```
 
-Edit `.env` with your API URL:
+Edit `.env` with your API URL (default backend port is **5001** in `rt-xai-lad-api/run.py`):
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:5001
 ```
 
 ### Development
@@ -103,6 +105,13 @@ npm run preview
 ```
 
 ## Pages
+
+### Login (`/login`)
+
+- Sign in with a user defined in the API database (`users` table).
+- Default dev credentials (if you use API defaults): username `admin`, password `admin123` — change these in production via API env vars or `python -m scripts.seed_user` on the backend.
+- After login, a bearer token is stored under `localStorage` key `rt_xai_lad_token` and attached to requests by `src/api/client.js`.
+- **Logout** is available in the top app bar.
 
 ### Dashboard (`/`)
 - Overview metrics (total students, at-risk count, average risk)
@@ -138,7 +147,7 @@ npm run preview
 
 The frontend communicates with the backend API through:
 
-- `src/api/client.js` - Axios client configuration
+- `src/api/client.js` - Axios client configuration (adds `Authorization: Bearer …` when logged in; redirects to `/login` on `401`)
 - `src/api/dashboardApi.js` - API endpoint functions
 
 All API calls return data in the format:
@@ -186,9 +195,13 @@ See `src/app/store.js` and `src/app/slices/` for details.
 - Check `FRONTEND_ORIGIN` in backend `.env`
 
 ### API Connection Issues
-- Verify backend is running on port 5000
+- Verify backend is running (default **5001** unless you set `PORT`)
 - Check `VITE_API_BASE_URL` in `.env`
 - Check browser console for errors
+
+### Always redirected to login
+- Ensure the backend is reachable and `POST /api/auth/login` succeeds
+- If you changed API `SECRET_KEY`, existing tokens become invalid — sign in again
 
 ### Build Issues
 - Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`
