@@ -30,6 +30,7 @@ const StudentsPage = () => {
   const { students, loading, error } = useSelector((state) => state.students)
   
   const [filters, setFilters] = useState({
+    student_id: '',
     code_module: '',
     code_presentation: '',
     risk_level: '',
@@ -80,6 +81,14 @@ const StudentsPage = () => {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                <TextField
+                  label="Student ID"
+                  placeholder="Filter by student ID"
+                  value={filters.student_id}
+                  onChange={(e) => handleFilterChange('student_id', e.target.value)}
+                  sx={{ minWidth: 200 }}
+                  size="small"
+                />
                 <TextField
                   select
                   label="Module"
